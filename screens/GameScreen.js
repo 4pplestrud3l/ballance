@@ -134,6 +134,33 @@ export default function GameScreen({ navigation }) {
             fontSize: 18,
             bottom: 40,
         },
+        moveButtons: {
+            position: 'absolute',
+            zIndex: 10,
+            bottom: -40,
+            left: 300,
+        },
+        rightButton: {
+            position: 'absolute',
+            left: 10,
+            bottom: 0,
+        },
+        leftButton: {
+            position: 'absolute',
+            right: 10,
+            bottom: 0,
+        },
+        upButton: {
+            position: 'absolute',
+            right: -12,
+            bottom: 35,
+        },
+        downButton: {
+            position: 'absolute',
+            right: -12,
+            bottom: -35,
+        },
+        
 
     });
 
@@ -151,6 +178,32 @@ export default function GameScreen({ navigation }) {
             <View style={styles.buttonsContainer}>
                 <Button title="Back" onPress={() => navigation.navigate('MenuScreen')} />
                 <Button title="Reset" onPress={() => setBallPosition({ x: 200, y: 400 })} />
+            <View style={styles.moveButtons}>
+                <View style={styles.leftButton}>
+                    <Button
+                        title="←"
+                        onPress={() => moveBall({ x: -10, y: 0 })}
+                    />
+                </View>
+                <View style={styles.rightButton}>
+                    <Button
+                        title="→"
+                        onPress={() => moveBall({ x: 10, y: 0 })}
+                    />
+                </View>
+                <View style={styles.upButton}>
+                    <Button
+                        title="↑"
+                        onPress={() => moveBall({ x: 0, y: 10 })}
+                    />
+                </View>
+                <View style={styles.downButton}>
+                    <Button
+                        title="↓"
+                        onPress={() => moveBall({ x: 0, y: -10 })}
+                    />
+                </View>
+            </View>
             </View>
         </View>
     );
