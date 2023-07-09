@@ -18,16 +18,16 @@ export default function GameScreen({ navigation }) {
     const screenHeight = screenDimensions.height;
 
     const walls = [
-        { x: 100, y: 100, width: 51, height: 250 },
-        { x: 150, y: 200, width: 51, height: 50 },
-        { x: 200, y: 100, width: 50, height: 250 },
+        { x: 100, y: 150, width: 51, height: 250 },
+        { x: 150, y: 250, width: 51, height: 50 },
+        { x: 200, y: 150, width: 50, height: 250 },
 
-        { x: 300, y: 100, width: 51, height: 250 },
+        { x: 300, y: 150, width: 51, height: 250 },
 
-        { x: 50, y: 50, width: screenWidth - 100, height: 1 },
+        { x: 50, y: 120, width: screenWidth - 100, height: 1 },
         { x: 50, y: screenHeight - 100, width: screenWidth - 100, height: 1 },
-        { x: 50, y: 50, width: 1, height: screenHeight - 150 },
-        { x: screenWidth - 50, y: 50, width: 1, height: screenHeight - 150 },
+        { x: 50, y: 120, width: 1, height: screenHeight - 220 },
+        { x: screenWidth - 50, y: 120, width: 1, height: screenHeight - 220 },
     ];
 
 
@@ -120,6 +120,21 @@ export default function GameScreen({ navigation }) {
             position: 'absolute',
             backgroundColor: 'black',
         },
+        buttonsContainer: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            width: '100%',
+            paddingHorizontal: 100,
+            position: 'absolute',
+            bottom: 75,
+        },
+
+        positionText: {
+            position: 'absolute',
+            fontSize: 18,
+            bottom: 40,
+        },
+
     });
 
 
@@ -129,10 +144,14 @@ export default function GameScreen({ navigation }) {
             {walls.map((wall, index) => (
                 <View key={index} style={[styles.wall, { left: wall.x, bottom: wall.y, width: wall.width, height: wall.height }]} />
             ))}
-            <Text>
-                {ballPosition.x}, {ballPosition.y}
-            </Text>
-            <Button title="Back" onPress={() => navigation.navigate('MenuScreen')} />
+            <Text style={styles.positionText}>
+                    ballX: {Math.round(ballPosition.x)},
+                    ballY: {Math.round(ballPosition.y)}
+                </Text>
+            <View style={styles.buttonsContainer}>
+                <Button title="Back" onPress={() => navigation.navigate('MenuScreen')} />
+                <Button title="Reset" onPress={() => setBallPosition({ x: 200, y: 400 })} />
+            </View>
         </View>
     );
 
