@@ -6,12 +6,7 @@ import { SettingsContext } from '../context/SettingsContext';
 
 export default function GameScreen({ navigation }) {
     const { ballSize, setBallSize } = useContext(SettingsContext);
-    const [ballPosition, setBallPosition] = useState({ x: 100, y: 100 });
-
-    const walls = [
-        { x: 0, y: 0, width: 50, height: 50 },
-        { x: 0, y: 0, width: 50, height: 50 },
-    ];
+    const [ballPosition, setBallPosition] = useState({ x: 200, y: 400 });
 
     // q: how to get screendimensions
     // a: use the Dimensions API
@@ -21,6 +16,20 @@ export default function GameScreen({ navigation }) {
     // a: use the width and height properties of the screenDimensions object
     const screenWidth = screenDimensions.width;
     const screenHeight = screenDimensions.height;
+
+    const walls = [
+        { x: 100, y: 100, width: 51, height: 250 },
+        { x: 150, y: 200, width: 51, height: 50 },
+        { x: 200, y: 100, width: 50, height: 250 },
+
+        { x: 300, y: 100, width: 51, height: 250 },
+
+        { x: 50, y: 50, width: screenWidth - 100, height: 1 },
+        { x: 50, y: screenHeight - 100, width: screenWidth - 100, height: 1 },
+        { x: 50, y: 50, width: 1, height: screenHeight - 150 },
+        { x: screenWidth - 50, y: 50, width: 1, height: screenHeight - 150 },
+    ];
+
 
     // write a comment to describe the useEffect hook
     // q: how to check for collision and prevent the ball of moving through the walls?
@@ -88,8 +97,6 @@ export default function GameScreen({ navigation }) {
 
     const styles = StyleSheet.create({
         container: {
-            marginLeft: 20,
-            marginRight: 20,
             flex: 1,
             backgroundColor: '#fff',
             alignItems: 'center',
