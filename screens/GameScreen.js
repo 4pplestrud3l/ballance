@@ -6,7 +6,7 @@ import { SettingsContext } from '../context/SettingsContext';
 
 export default function GameScreen({ navigation }) {
     const { ballSize, setBallSize } = useContext(SettingsContext);
-    const [ballPosition, setBallPosition] = useState({ x: 200, y: 400 });
+    const [ballPosition, setBallPosition] = useState({ x: 200, y: 405 });
 
     // q: how to get screendimensions
     // a: use the Dimensions API
@@ -30,26 +30,41 @@ export default function GameScreen({ navigation }) {
         { x: screenWidth - 50, y: 120, width: 1, height: screenHeight - 220 },
     ];
 
-
-    // write a comment to describe the useEffect hook
-    // q: how to check for collision and prevent the ball of moving through the walls?
-    // a: use the checkCollision function to check if the ball collides with a wall
-
+    
     const checkCollision = (ballPosition) => {
         const { x, y } = ballPosition;
+        const ballRadius = ballSize / 2;
         for (const wall of walls) {
             const { x: wallX, y: wallY, width, height } = wall;
-            if (x < wallX + width && x + ballSize > wallX && y < wallY + height && y + ballSize > wallY) {
+
+            const ballCenterX = x + ballRadius;
+            const ballCenterY = y + ballRadius;
+            
+            const closestX = Math.max(wallX, Math.min(ballCenterX, wallX + width));
+            const closestY = Math.max(wallY, Math.min(ballCenterY, wallY + height));
+
+            const distanceX = ballCenterX - closestX;
+            const distanceY = ballCenterY - closestY;
+            const distanceSquared = distanceX * distanceX + distanceY * distanceY;
+
+            if (distanceSquared < ballRadius * ballRadius) {
                 return true;
             }
         }
+
         return false;
     };
+
+    // q: how to allow the ball to only move in even numbers of pixels?
+    // a: use the Math.round function to round the ball position to the nearest even number
+    // q: where to use the Math.round function?
+    // a: use the Math.round function in the moveBall function
+
 
     useEffect(() => {
         let subscription;
         const subscribeToAccelerometer = async () => {
-            Accelerometer.setUpdateInterval(7); // Set the update interval (in milliseconds)
+            Accelerometer.setUpdateInterval(16); // Set the update interval (in milliseconds)
             subscription = Accelerometer.addListener(accelerometerData => {
                 const { x, y } = accelerometerData;
                 const tiltThreshold = 0.01; // Adjust this threshold based on your need
@@ -71,16 +86,13 @@ export default function GameScreen({ navigation }) {
         };
     }, []);
 
-
-
-
     // move the ball to a new position
 
     // prevent the ball from moving through the walls and outside the screen
 
     
     
-    const moveBall = ({ x, y }) => {
+    /* const moveBall = ({ x, y }) => {
         setBallPosition(prevPosition => {
             const nextPosition = {
                 x: prevPosition.x + x,
@@ -91,8 +103,26 @@ export default function GameScreen({ navigation }) {
             }
             return nextPosition;
         });
+    }; */
+
+
+    // if the ball collides with the wall, dont let the ball move further in the wall, but allow it moving alongside the wall, allow the ball to glide along the wall
+    const moveBall = ({ x, y }) => {
+        setBallPosition(prevPosition => {
+            const nextPosition = {
+                x: Math.round(prevPosition.x + x),
+                y: Math.round(prevPosition.y + y),
+            };
+            // if checkcollision is true, return prevPosition
+            if (checkCollision(nextPosition)) {
+                console.log('collision detected');
+                return prevPosition;
+            }
+            return nextPosition;
+        });
     };
-    
+
+
     // Stylesheet
 
     const styles = StyleSheet.create({
@@ -165,6 +195,7 @@ export default function GameScreen({ navigation }) {
     });
 
 
+    // implement joystick to move the ball
     return (
         <View style={styles.container}>
             <View style={[styles.ball, { width: ballSize, height: ballSize, left: ballPosition.x, bottom: ballPosition.y }]} />
@@ -172,8 +203,8 @@ export default function GameScreen({ navigation }) {
                 <View key={index} style={[styles.wall, { left: wall.x, bottom: wall.y, width: wall.width, height: wall.height }]} />
             ))}
             <Text style={styles.positionText}>
-                    ballX: {Math.round(ballPosition.x)},
-                    ballY: {Math.round(ballPosition.y)}
+                    ballX: {ballPosition.x},
+                    ballY: {ballPosition.y}
                 </Text>
             <View style={styles.buttonsContainer}>
                 <Button title="Back" onPress={() => navigation.navigate('MenuScreen')} />
@@ -203,6 +234,7 @@ export default function GameScreen({ navigation }) {
                         onPress={() => moveBall({ x: 0, y: -10 })}
                     />
                 </View>
+                
             </View>
             </View>
         </View>
