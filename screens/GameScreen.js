@@ -1,5 +1,5 @@
 // Date: 2021/05/30
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Button, StyleSheet, Text, View, Dimensions } from 'react-native';
 import { Accelerometer } from 'expo-sensors';
 import { SettingsContext } from '../context/SettingsContext';
@@ -7,6 +7,7 @@ import { SettingsContext } from '../context/SettingsContext';
 export default function GameScreen({ navigation }) {
     const { ballSize, setBallSize } = useContext(SettingsContext);
     const [ballPosition, setBallPosition] = useState({ x: 200, y: 405 });
+    const ballRadius = ballSize / 2;
 
     // q: how to get screendimensions
     // a: use the Dimensions API
@@ -31,7 +32,7 @@ export default function GameScreen({ navigation }) {
     ];
 
     
-    const checkCollision = (ballPosition) => {
+    /*const checkCollision = (ballPosition) => {
         const { x, y } = ballPosition;
         const ballRadius = ballSize / 2;
         for (const wall of walls) {
@@ -53,7 +54,34 @@ export default function GameScreen({ navigation }) {
         }
 
         return false;
-    };
+    };*/
+    // q: can we somehow rebuild the checkCollision function also return the wall that the ball collides with?
+    // a: yes, we can return the wall object that the ball collides with
+
+    const checkCollision = useCallback((ballPosition) => {
+        const { x, y } = ballPosition;
+        
+        for (const wall of walls) {
+            const { x: wallX, y: wallY, width, height } = wall;
+
+            const ballCenterX = x + ballRadius;
+            const ballCenterY = y + ballRadius;
+
+            const closestX = Math.max(wallX, Math.min(ballCenterX, wallX + width));
+            const closestY = Math.max(wallY, Math.min(ballCenterY, wallY + height));
+
+            const distanceX = ballCenterX - closestX;
+            const distanceY = ballCenterY - closestY;
+            const distanceSquared = distanceX * distanceX + distanceY * distanceY;
+
+            if (distanceSquared < ballRadius * ballRadius) {
+                return wall;
+            }
+        }
+
+        return null;
+    });
+
 
     // q: how to allow the ball to only move in even numbers of pixels?
     // a: use the Math.round function to round the ball position to the nearest even number
@@ -70,7 +98,7 @@ export default function GameScreen({ navigation }) {
                 const tiltThreshold = 0.01; // Adjust this threshold based on your need
 
                 if (Math.abs(x) > tiltThreshold || Math.abs(y) > tiltThreshold) {
-                    moveBall({ x: -x * 10, y: -y * 15 });
+                    moveBall({ x: Math.round(-x * 10), y: Math.round(-y * 15) });
                 }
             });
         };
@@ -86,41 +114,75 @@ export default function GameScreen({ navigation }) {
         };
     }, []);
 
-    // move the ball to a new position
+    // q: how to improve performance?
+    // a: use the useCallback hook to memoize the handleCollision function
+    // q: how to use the useCallback hook?
+    // a: wrap the handleCollision function in the useCallback hook
+ 
+    const handleCollision = useCallback((prevPosition, nextPosition, wall) => { 
+        const { x: wallX, y: wallY, width, height } = wall;
+        let newX = nextPosition.x;
+        let newY = nextPosition.y;
+      
+        // Check if ball is colliding with the wall on the x-coordinate
+        if (
+          prevPosition.y + ballSize > wallY &&
+          prevPosition.y < wallY + height &&
+          ((prevPosition.x + ballSize <= wallX && nextPosition.x + ballSize > wallX) || // Colliding from the left
+          (prevPosition.x >= wallX + width && nextPosition.x < wallX + width)) // Colliding from the right
+        ) {
+          newX = prevPosition.x; // Prevent movement on x-coordinate
+        }
+      
+        // Check if ball is colliding with the wall on the y-coordinate
+        if (
+          prevPosition.x + ballSize > wallX &&
+          prevPosition.x < wallX + width &&
+          ((prevPosition.y + ballSize <= wallY && nextPosition.y + ballSize > wallY) || // Colliding from the top
+          (prevPosition.y >= wallY + height && nextPosition.y < wallY + height)) // Colliding from the bottom
+        ) {
+          newY = prevPosition.y; // Prevent movement on y-coordinate
+        }
+      
+        const newPosition = {
+          x: newX,
+          y: newY,
+        };
+      
+        return newPosition;
+    }, []);
 
-    // prevent the ball from moving through the walls and outside the screen
+    // q: why is handleCollision in useCallback unused?
+    // a: because we are not calling the handleCollision function anywhere in the code
+    // q: how to call the handleCollision function?
+    // a: call the handleCollision function in the moveBall function
 
-    
-    
-    /* const moveBall = ({ x, y }) => {
+    // q: how improve performance of moveball function?
+    // a: use the useCallback hook to memoize the moveBall function
+
+
+
+    const moveBall = useCallback(({ x, y }) => {
         setBallPosition(prevPosition => {
             const nextPosition = {
                 x: prevPosition.x + x,
                 y: prevPosition.y + y,
             };
-            if (checkCollision(nextPosition)) {
-                return prevPosition;
-            }
-            return nextPosition;
-        });
-    }; */
+            
+            const wall = checkCollision(nextPosition);
 
-
-    // if the ball collides with the wall, dont let the ball move further in the wall, but allow it moving alongside the wall, allow the ball to glide along the wall
-    const moveBall = ({ x, y }) => {
-        setBallPosition(prevPosition => {
-            const nextPosition = {
-                x: Math.round(prevPosition.x + x),
-                y: Math.round(prevPosition.y + y),
-            };
-            // if checkcollision is true, return prevPosition
-            if (checkCollision(nextPosition)) {
+            if (wall) {
                 console.log('collision detected');
-                return prevPosition;
+
+                // Perform collision response with useCallback function handleCollision
+                const newPosition = handleCollision(prevPosition, nextPosition, wall);
+
+                return newPosition;
             }
             return nextPosition;
         });
-    };
+    });
+
 
 
     // Stylesheet

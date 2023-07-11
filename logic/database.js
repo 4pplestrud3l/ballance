@@ -32,7 +32,7 @@ export const init = () => {
     return promise;
 }
 
-export const insertName = (name) => {
+export const createLevel = (name) => {
     const promise = new Promise((resolve, reject) => {
         db.transaction(tx => {
             tx.executeSql(
@@ -49,6 +49,26 @@ export const insertName = (name) => {
     });
     return promise;
 }
+
+// get levels
+export const getLevels = () => {
+    const promise = new Promise((resolve, reject) => {
+        db.transaction(tx => {
+            tx.executeSql(
+                'SELECT * FROM levels;',
+                [],
+                (_, result) => {
+                    resolve(result);
+                },
+                (_, err) => {
+                    reject(err);
+                }
+            );
+        });
+    });
+    return promise;
+}
+
 
 export const insertLevelMapping = (wallx, wally, width, height) => {
     const promise = new Promise((resolve, reject) => {

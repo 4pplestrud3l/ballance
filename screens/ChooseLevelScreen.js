@@ -3,18 +3,24 @@
 // imports
 import React, { useState, useEffect } from 'react';
 import { Button, StyleSheet, Text, View, Dimensions } from 'react-native';
+import * as db from '../logic/database.js';
+// import necessary components from database.js
 
 // export the choose level screen as a function
 export default function ChooseLevelScreen({ navigation }) {
     // display a list view of the levels by retreiving them from the database
+    
     const [levels, setLevels] = useState([]);
-
     useEffect(() => {
-        fetch('http://localhost:3000/levels')
-            .then(response => response.json())
-            .then(data => setLevels(data));
-    }
-    , []);
+        db.getLevels().then((levels) => {
+            setLevels(levels);
+        });
+    }, []);
+
+    // create level function should navigate to LevelSettingsScreen
+    const createLevel = () => {
+        navigation.navigate('LevelSettingsScreen');
+    };
 
     return (
         <View style={styles.container}>
@@ -25,6 +31,9 @@ export default function ChooseLevelScreen({ navigation }) {
                     )
                 }
                 )}
+            </View>
+            <View style={styles.buttonContainer}>
+                <Button style={styles.button} title="Create Level" onPress={ createLevel } />
             </View>
         </View>
     );

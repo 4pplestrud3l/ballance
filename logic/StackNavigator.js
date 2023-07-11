@@ -5,6 +5,7 @@ import GameScreen from '../screens/GameScreen.js';
 import EditorScreen from '../screens/EditorScreen.js';
 import ChooseLevelScreen from '../screens/ChooseLevelScreen.js';
 import { SettingsProvider } from '../context/SettingsContext';
+import LevelSettingsScreen from '../screens/LevelSettingsScreen.js';
 
 const Stack = createStackNavigator();
 
@@ -17,6 +18,7 @@ export default function myStack() {
         <Stack.Screen name="GameScreen" component={GameScreen} />
         <Stack.Screen name="EditorScreen" component={EditorScreen} />
         <Stack.Screen name="ChooseLevelScreen" component={ChooseLevelScreen} />
+        <Stack.Screen name="LevelSettingsScreen" component={LevelSettingsScreen} />
     </Stack.Navigator>
     </SettingsProvider>
   );
