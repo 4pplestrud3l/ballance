@@ -2,11 +2,11 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { Button, StyleSheet, Text, View, Dimensions } from "react-native";
 import { Accelerometer } from "expo-sensors";
-import { Obstacle, Line, Ball } from "../components/gameElements";
+import { Obstacle, Ball } from "../components/gameElements";
 import { GameStyles } from "../styles/GameStyles";
 import SettingsScreen from "./SettingsModalScreen";
 import { SettingsContext } from "../context/SettingsContext";
-import { Circle, Svg, Polygon } from "react-native-svg";
+import { Circle, Svg, Polygon, Line } from "react-native-svg";
 
 export default function GameScreen({ }) {
   const styles = GameStyles;
@@ -23,6 +23,8 @@ export default function GameScreen({ }) {
     { id: 3, points: ["100,250", "200,250", "200,350", "100,350", "400,320"] },
   ];
   const [closestPoints, setClosestPoints] = useState([]);
+  const [projectionPoint, setProjectionPoint] = useState(null);
+
 
 
   const [tiltDirection, setTiltDirection] = useState("none");
@@ -110,28 +112,34 @@ export default function GameScreen({ }) {
   
     setClosestPoints(closestObstaclePoints);
   
-    let vec1 = { x: closestObstaclePoints[0][0] - ballPosition.x, y: closestObstaclePoints[0][1] - ballPosition.y };
-    let vec2 = { x: closestObstaclePoints[1][0] - ballPosition.x, y: closestObstaclePoints[1][1] - ballPosition.y };
+    let vecClosestPoints = {
+      x: closestObstaclePoints[1][0] - closestObstaclePoints[0][0],
+      y: closestObstaclePoints[1][1] - closestObstaclePoints[0][1]
+    };
   
-    let angle = Math.acos(
-      (vec1.x * vec2.x + vec1.y * vec2.y) /
-      (Math.sqrt(vec1.x * vec1.x + vec1.y * vec1.y) * Math.sqrt(vec2.x * vec2.x + vec2.y * vec2.y))
-      );
-    
-    let angleInDegrees = angle * (180 / Math.PI);
-    let oppositeAngleInDegrees = 180 - angleInDegrees;
+    let vecBallToPoint0 = {
+      x: ballPosition.x - closestObstaclePoints[0][0],
+      y: ballPosition.y - closestObstaclePoints[0][1]
+    };
   
-    console.log("Closest Points:", closestObstaclePoints);
-    console.log("Angle in degrees:", angleInDegrees);
-    console.log("Opposite Angle in degrees:", oppositeAngleInDegrees);
-    const collisionDegree = 130;
-   
+    let t = (vecBallToPoint0.x * vecClosestPoints.x + vecBallToPoint0.y * vecClosestPoints.y) /
+      (vecClosestPoints.x * vecClosestPoints.x + vecClosestPoints.y * vecClosestPoints.y);
   
-    // if(angleInDegrees >= collisionDegree || minObstacleDistance <= ballRadius) {
-    //   return true; // collision
-    // }
+    let projection = {
+      x: closestObstaclePoints[0][0] + t * vecClosestPoints.x,
+      y: closestObstaclePoints[0][1] + t * vecClosestPoints.y
+    };
   
-    return false; // no collision
+    setProjectionPoint(projection);
+  
+    let distBallToProjection = Math.sqrt(Math.pow(projection.x - ballPosition.x, 2) + Math.pow(projection.y - ballPosition.y, 2));
+    console.log(distBallToProjection);
+    console.log(ballRadius);
+    if (distBallToProjection <= ballRadius*2) {
+      return true;  // Collision detected
+    }
+  
+    return false;  // No collision detected
   }, [ballPosition, ballRadius]);
   
   
@@ -181,8 +189,27 @@ export default function GameScreen({ }) {
             fill="pink"
           />
         )}
+ {projectionPoint && (
+        <React.Fragment>
+          <Circle
+            cx={projectionPoint.x} // x-coordinate
+            cy={projectionPoint.y} // y-coordinate
+            r={5} // radius
+            fill="green" // color
+          />
+
+          <Line // Adding line component here
+            x1={ballPosition.x}
+            y1={ballPosition.y}
+            x2={projectionPoint.x}
+            y2={projectionPoint.y}
+            stroke="black"
+            strokeWidth="2"
+          />
+        </React.Fragment>
+      )}
       <Ball x={ballPosition.x} y={ballPosition.y} ballSize={ballSize} />
-      
+
     </Svg>
         <Text style={styles.positionText}>
           tiltDirection: {tiltDirection},
