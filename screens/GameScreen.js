@@ -89,7 +89,7 @@ export default function GameScreen({ }) {
     return () => clearInterval(interval);
   }, [tiltDirection]);
 
-  const checkCollision = useCallback(() => {
+  const checkCollision = useCallback((potentialPosition) => {
     let closestObstaclePoints = [];
     let minObstacleDistance = Infinity;
   
@@ -98,7 +98,7 @@ export default function GameScreen({ }) {
       let pointsWithDistances = [];
   
       for(let point of points) {
-        const distance = Math.sqrt(Math.pow(ballPosition.x - point[0], 2) + Math.pow(ballPosition.y - point[1], 2));
+        const distance = Math.sqrt(Math.pow(potentialPosition.x - point[0], 2) + Math.pow(potentialPosition.y - point[1], 2));
         pointsWithDistances.push({ point, distance });
       }
   
@@ -118,29 +118,32 @@ export default function GameScreen({ }) {
     };
   
     let vecBallToPoint0 = {
-      x: ballPosition.x - closestObstaclePoints[0][0],
-      y: ballPosition.y - closestObstaclePoints[0][1]
+      x: potentialPosition.x - closestObstaclePoints[0][0],
+      y: potentialPosition.y - closestObstaclePoints[0][1]
     };
   
     let t = (vecBallToPoint0.x * vecClosestPoints.x + vecBallToPoint0.y * vecClosestPoints.y) /
-      (vecClosestPoints.x * vecClosestPoints.x + vecClosestPoints.y * vecClosestPoints.y);
-  
+    (vecClosestPoints.x * vecClosestPoints.x + vecClosestPoints.y * vecClosestPoints.y);
+
+  // Ensure the projected point stays on the line segment between the two points
+    t = Math.max(0, Math.min(1, t));
+
     let projection = {
       x: closestObstaclePoints[0][0] + t * vecClosestPoints.x,
       y: closestObstaclePoints[0][1] + t * vecClosestPoints.y
     };
   
+    let distBallToProjection = Math.sqrt(Math.pow(projection.x - potentialPosition.x, 2) + Math.pow(projection.y - potentialPosition.y, 2));
     setProjectionPoint(projection);
   
-    let distBallToProjection = Math.sqrt(Math.pow(projection.x - ballPosition.x, 2) + Math.pow(projection.y - ballPosition.y, 2));
-    console.log(distBallToProjection);
-    console.log(ballRadius);
     if (distBallToProjection <= ballRadius*2) {
+      console.log("collision");
       return true;  // Collision detected
     }
-  
     return false;  // No collision detected
-  }, [ballPosition, ballRadius]);
+  }, [ballRadius]);  // Remove ballPosition from the dependency array
+  
+  
   
   
   // simple function to move the ball by using similar logic as in the useEffect above
@@ -148,11 +151,12 @@ export default function GameScreen({ }) {
     (direction) => {
       const { x, y } = direction;
       const newBallPosition = { x: ballPosition.x + x, y: ballPosition.y + y };
-      setBallPosition(newBallPosition);
+   
   
-      if(checkCollision()){
+      if(checkCollision(newBallPosition)){
         // revert ball's position if there is a collision
-        setBallPosition(ballPosition);
+      } else {
+        setBallPosition(newBallPosition);
       }
     },
     [ballPosition, checkCollision]
@@ -161,7 +165,7 @@ export default function GameScreen({ }) {
 
 
 
-  // implement joystick to move the ball
+  // implement joystick to move the bal1
   return (
     <View style={styles.container}>
     <Svg height="100%" width={"100%"}>
@@ -174,7 +178,7 @@ export default function GameScreen({ }) {
           </React.Fragment>
         );
       })}
-        {closestPoints.map((point, index) => (
+        {/* {closestPoints.map((point, index) => (
       <Circle
         key={index}
         cx={point[0]} // x-coordinate
@@ -207,7 +211,7 @@ export default function GameScreen({ }) {
             strokeWidth="2"
           />
         </React.Fragment>
-      )}
+      )} */}
       <Ball x={ballPosition.x} y={ballPosition.y} ballSize={ballSize} />
 
     </Svg>
@@ -227,16 +231,16 @@ export default function GameScreen({ }) {
         />
         <View style={styles.moveButtons}>
           <View style={styles.leftButton}>
-            <Button title="←" onPress={() => moveBall({ x: -10, y: 0 })} />
+            <Button title="←" onPress={() => moveBall({ x: -1, y: 0 })} />
           </View>
           <View style={styles.rightButton}>
-            <Button title="→" onPress={() => moveBall({ x: 10, y: 0 })} />
+            <Button title="→" onPress={() => moveBall({ x: 1, y: 0 })} />
           </View>
           <View style={styles.upButton}>
-            <Button title="↑" onPress={() => moveBall({ x: 0, y: -10 })} />
+            <Button title="↑" onPress={() => moveBall({ x: 0, y: -1 })} />
           </View>
           <View style={styles.downButton}>
-            <Button title="↓" onPress={() => moveBall({ x: 0, y: 10 })} />
+            <Button title="↓" onPress={() => moveBall({ x: 0, y: 1 })} />
           </View>
         </View>
       </View>
