@@ -1,33 +1,64 @@
-import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+  useRef,
+} from "react";
 import { Button, StyleSheet, Text, View, Dimensions } from "react-native";
 import { Accelerometer } from "expo-sensors";
-import { Obstacle, Ball } from "../components/gameElements";
+import { Obstacle, Ball, Grid } from "../components/gameElements";
 import { GameStyles } from "../styles/GameStyles";
 import SettingsScreen from "./SettingsModalScreen";
 import { SettingsContext } from "../context/SettingsContext";
-import { Circle, Svg, Polygon, Line } from "react-native-svg";
+import {
+  Circle,
+  Svg,
+  Polygon,
+  Line,
+  Defs,
+  Pattern,
+  Rect,
+} from "react-native-svg";
 
 export default function GameScreen({}) {
   const styles = GameStyles;
   const accelerometerDataRef = useRef({ x: 0, y: 0, z: 0 });
 
+  // useState for ball properties
+  /*const ball = {
+    x: 100,
+    y: 200,
+    velocity: 0, // pixels per second
+  };*/
+
   const { ballSize, setBallSize } = useContext(SettingsContext);
   const [ballPosition, setBallPosition] = useState({ x: 100, y: 200 });
-  const [ballMovement, setBallMovement] = useState({
-    velocity: 0, // pixels per second
-    direction: "0,0", // x and y tilt from -1 to 1
-  });
   const ballRadius = ballSize / 2;
   const screenDimensions = Dimensions.get("window");
+
   const screenWidth = screenDimensions.width;
   const screenHeight = screenDimensions.height;
 
+  // Calculate the number of cells in each direction based on screen dimensions
+  const numCellsHorizontal = 15;
+  const numCellsVertical = 15;
+
+  // Calculate the cell size based on the smaller dimension (width or height)
+  const cellSize = Math.min(screenWidth / numCellsHorizontal, screenHeight / numCellsVertical);
+
+  // Calculate the adjusted screen dimensions based on the number of cells
+  const adjustedScreenWidth = numCellsHorizontal * cellSize;
+  const adjustedScreenHeight = numCellsVertical * cellSize;
+
   const obstacleCorners = [
     { id: 1, points: ["100,50", "200,50", "200,150", "100,150"] },
-    { id: 3, points: ["100,250", "200,250", "400,320", "200,350", "100,350"] },
+    { id: 3, points: ["600,250", "800,250", "800,400", "600, 400"] },
+    { id: 4, points: ["100,250", "200,250", "400,320", "200,350", "100,350"] },
   ];
   const [closestPoints, setClosestPoints] = useState([]);
   const [projectionPoint, setProjectionPoint] = useState(null);
+
 
   const checkCollision = useCallback(
     (potentialPosition) => {
@@ -99,6 +130,9 @@ export default function GameScreen({}) {
     [ballRadius]
   ); // Remove ballPosition from the dependency array
 
+  // q: how to do the same function as here, but get all closest points and projection points for all obstacles in a certain radius?
+  // a: use a for loop to iterate through all obstacles and check for collision with each one
+
   // simple function to move the ball by using similar logic as in the useEffect above
   const moveBall = useCallback(({ x, y }) => {
     setBallPosition((prevPosition) => {
@@ -109,10 +143,10 @@ export default function GameScreen({}) {
 
       if (
         checkCollision(nextPosition) ||
-        nextPosition.x < 0 + ballRadius ||
-        nextPosition.x > screenWidth - ballRadius ||
-        nextPosition.y < 0 + ballRadius ||
-        nextPosition.y > screenHeight - ballRadius
+        nextPosition.x < 0 + ballSize ||
+        nextPosition.x > screenWidth - ballSize ||
+        nextPosition.y < 0 + ballSize ||
+        nextPosition.y > screenHeight - ballSize
       ) {
         console.log("collision detected");
 
@@ -127,7 +161,7 @@ export default function GameScreen({}) {
 
   // useEffect for Accelerometer data
   useEffect(() => {
-    const subscription = Accelerometer.addListener(accelerometerData => {
+    const subscription = Accelerometer.addListener((accelerometerData) => {
       accelerometerDataRef.current = accelerometerData;
     });
 
@@ -138,7 +172,6 @@ export default function GameScreen({}) {
   // useEffect for timed ball movement
   useEffect(() => {
     const interval = setInterval(() => {
-      
       // Calculate ball movement based on accelerometer data
       const { x, y } = accelerometerDataRef.current;
       moveBall({ x: Math.round(-x * 10), y: Math.round(y * 15) });
@@ -148,10 +181,32 @@ export default function GameScreen({}) {
     return () => clearInterval(interval);
   }, [moveBall]);
 
-
   return (
     <View style={styles.container}>
-      <Svg height="100%" width={"100%"}>
+      <Svg height="100%" width="100%">
+        <Pattern
+          id="svg-pattern"
+          x="0"
+          y="0"
+          width={cellSize}
+          height={cellSize}
+          fill="black"
+          patternUnits="userSpaceOnUse"
+          patternTransform="translate(1, 1) rotate(0) skewX(0)"
+        >
+          <Svg width={adjustedScreenWidth} height={adjustedScreenHeight} viewBox={`0 0 ${adjustedScreenWidth} ${adjustedScreenHeight}`}>
+            <Rect width={cellSize} height={cellSize} fill="black" />
+            <Rect
+              width="100%"
+              height="100%"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+            />
+          </Svg>
+        </Pattern>
+        <Rect x="0" y="0" width="100%" height="100%" fill="url(#svg-pattern)" />
+
         {obstacleCorners.map((obstacleCorner, index) => {
           const { id, points } = obstacleCorner;
 
@@ -206,7 +261,10 @@ export default function GameScreen({}) {
           title="Back"
           onPress={() => navigation.navigate("MenuScreen")}
         />
-        <Button title="Reset" onPress={() => setBallPosition({ x: 0, y: 0 })} />
+        <Button
+          title="Reset"
+          onPress={() => setBallPosition({ x: 200, y: 50 })}
+        />
         <View style={styles.moveButtons}>
           <View style={styles.leftButton}>
             <Button title="←" onPress={() => moveBall({ x: -10, y: 0 })} />

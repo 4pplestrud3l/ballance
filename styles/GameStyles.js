@@ -9,14 +9,20 @@ const screenHeight = screenDimensions.height;
 
 // define a stylesheet for the app
 export const GameStyles = StyleSheet.create({
-    container: {
+      container: {
         flex: 1,
-        backgroundColor: "#fff",
-        alignItems: "center",
-        justifyContent: "center",
         width: screenWidth,
         height: screenHeight,
         borderColor: "black",
+      },
+      row: {
+        flexDirection: 'row',
+      },
+      cell: {
+        position: 'absolute',
+        backgroundColor: '#f0f0f0',
+        borderWidth: 1,
+        borderColor: '#000',
       },
       resetButton: {
         position: "absolute",
@@ -89,7 +95,7 @@ export const GameStyles = StyleSheet.create({
             flex: 1,
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)', // semi-transparent background
+            backgroundColor: ' ', // semi-transparent background
           },
           modalContent: {
             backgroundColor: 'transparent',
@@ -99,6 +105,10 @@ export const GameStyles = StyleSheet.create({
             height: '50%',
             justifyContent: 'center',
             alignItems: 'center',
+          },
+          gridContainer: {
+            flex: 1,
+            backgroundColor: 'black',
           },
 
 });
