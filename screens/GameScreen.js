@@ -42,10 +42,10 @@ export default function GameScreen({}) {
 
   // Calculate the number of cells in each direction based on screen dimensions
   const numCellsHorizontal = 15;
-  const numCellsVertical = 15;
+  const numCellsVertical = 30;
 
   // Calculate the cell size based on the smaller dimension (width or height)
-  const cellSize = Math.min(screenWidth / numCellsHorizontal, screenHeight / numCellsVertical);
+  const cellSize = Math.min(screenWidth / 15, screenHeight / 15);
 
   // Calculate the adjusted screen dimensions based on the number of cells
   const adjustedScreenWidth = numCellsHorizontal * cellSize;
