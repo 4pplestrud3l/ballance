@@ -130,10 +130,7 @@ export default function GameScreen({}) {
     [ballRadius]
   ); // Remove ballPosition from the dependency array
 
-  // q: how to do the same function as here, but get all closest points and projection points for all obstacles in a certain radius?
-  // a: use a for loop to iterate through all obstacles and check for collision with each one
-
-  // simple function to move the ball by using similar logic as in the useEffect above
+  // Function to move the ball, while checking if the ball collides either with the screenlimitations or the checkCollision function returns true
   const moveBall = useCallback(({ x, y }) => {
     setBallPosition((prevPosition) => {
       const nextPosition = {
@@ -150,7 +147,6 @@ export default function GameScreen({}) {
       ) {
         console.log("collision detected");
 
-        // Perform collision response with useCallback function handleCollision
         const newPosition = prevPosition;
 
         return newPosition;
