@@ -12,7 +12,7 @@ export const Obstacle = ({ points, id }) => {
 
   return (
     <Polygon
-          points={points.join(" ")}
+          points={points}
           fill="blue"
           style={styles.obstacle}
         />

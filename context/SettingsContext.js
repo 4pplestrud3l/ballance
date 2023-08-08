@@ -11,7 +11,7 @@ export const SettingsContext = createContext();
 // create a provider for the settings
 export const SettingsProvider = ({ children }) => {
     // define ballsize and gravity
-    const [ballSize, setBallSize] = useState(18);
+    const [ballSize, setBallSize] = useState(1);
 
     return (
         <SettingsContext.Provider value={{ ballSize, setBallSize }}>

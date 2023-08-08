@@ -44,8 +44,9 @@ export default function SettingsScreen({ navigation }) {
               <Text>Ball Size: {ballSize}</Text>
               <Slider
                 style={styles.slider}
-                minimumValue={10}
-                maximumValue={30}
+                minimumValue={0.1}
+                maximumValue={2}
+                step={0.1}
                 minimumTrackTintColor="#FFFFFF"
                 maximumTrackTintColor="#000000"
                 onValueChange={(value) => setBallSize(value)}
@@ -56,7 +57,7 @@ export default function SettingsScreen({ navigation }) {
             <Button
               title="Reset"
               onPress={() => {
-                setBallSize(18);
+                setBallSize(1);
               }}
             />
             <Button title="Close" onPress={closeModal} />

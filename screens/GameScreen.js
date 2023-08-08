@@ -5,7 +5,14 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import { Button, StyleSheet, Text, View, Dimensions } from "react-native";
+import {
+  Button,
+  StyleSheet,
+  Text,
+  View,
+  Dimensions,
+  Pressable,
+} from "react-native";
 import { Accelerometer } from "expo-sensors";
 import { Obstacle, Ball, Grid } from "../components/gameElements";
 import { GameStyles } from "../styles/GameStyles";
@@ -34,18 +41,22 @@ export default function GameScreen({}) {
 
   const { ballSize, setBallSize } = useContext(SettingsContext);
   const [ballPosition, setBallPosition] = useState({ x: 100, y: 200 });
-  const ballRadius = ballSize / 2;
+  const ballSizeAdjusted = ballSize * cellSize;
+  const ballRadius = ballSizeAdjusted / 2;
   const screenDimensions = Dimensions.get("window");
 
   const screenWidth = screenDimensions.width;
   const screenHeight = screenDimensions.height;
 
   // Calculate the number of cells in each direction based on screen dimensions
-  const numCellsHorizontal = 15;
-  const numCellsVertical = 15;
+  const numCellsHorizontal = 53;
+  const numCellsVertical = 100;
 
   // Calculate the cell size based on the smaller dimension (width or height)
-  const cellSize = Math.min(screenWidth / numCellsHorizontal, screenHeight / numCellsVertical);
+  const cellSize = Math.min(
+    screenWidth / numCellsHorizontal,
+    screenHeight / numCellsVertical
+  );
 
   // Calculate the adjusted screen dimensions based on the number of cells
   const adjustedScreenWidth = numCellsHorizontal * cellSize;
@@ -56,19 +67,47 @@ export default function GameScreen({}) {
     { id: 3, points: ["600,250", "800,250", "800,400", "600, 400"] },
     { id: 4, points: ["100,250", "200,250", "400,320", "200,350", "100,350"] },
   ];
+
+  const obstacles = [
+    {
+      id: 1,
+      pointsX: [1, 3, 3, 1],
+      pointsY: [1, 1, 3, 3],
+    },
+
+    {
+      id: 2,
+      pointsX: [4, 14, 14, 4],
+      pointsY: [4, 4, 14, 14],
+    },
+  ];
+
+  const getObstaclePoints = (obstacle) => {
+    const points = [];
+    for (let i = 0; i < obstacle.pointsX.length; i++) {
+      points.push(
+        `${Math.round(obstacle.pointsX[i] * cellSize)},${Math.round(
+          obstacle.pointsY[i] * cellSize
+        )}`
+      );
+    }
+    return points.join(" ");
+  };
+
   const [closestPoints, setClosestPoints] = useState([]);
   const [projectionPoint, setProjectionPoint] = useState(null);
-
 
   const checkCollision = useCallback(
     (potentialPosition) => {
       let closestObstaclePoints = [];
       let minObstacleDistance = Infinity;
 
-      for (let obstacle of obstacleCorners) {
-        const points = obstacle.points.map((point) =>
-          point.split(",").map(Number)
-        );
+      for (let obstacle of obstacles) {
+        const points = obstacle.pointsX.map((x, i) => [
+          x * cellSize,
+          obstacle.pointsY[i] * cellSize,
+        ]);
+
         let pointsWithDistances = [];
 
         for (let point of points) {
@@ -121,7 +160,9 @@ export default function GameScreen({}) {
       );
       setProjectionPoint(projection);
 
-      if (distBallToProjection <= ballRadius * 2) {
+
+      //console.log("distBallToProjection", distBallToProjection);
+      if (distBallToProjection <= ballSize * cellSize / 2) {
         console.log("collision");
         return true; // Collision detected
       }
@@ -181,9 +222,27 @@ export default function GameScreen({}) {
     return () => clearInterval(interval);
   }, [moveBall]);
 
+  // q: how to adjust ball position on the adjusted sizes for the grid?
+  // a: use the cellSize variable to adjust the ball position
+
+  // q: why the top left corner of the grid, is not at x:0, y:0?
+  // a: because the grid is centered on the screen, so the top left corner is at x: -screenWidth/2, y: -screenHeight/2
+  // q: where in the code is it centered on the screen?
+  // a: in the <View> component, the style is set to center the content
+  // q: is flex 1 centering it?
+  // a: yes, flex 1 is centering it
+  // q: can we change this to something, or would it corrupt the other styles?
+  // a: yes, we can change it to something else, but it would corrupt the other styles
+  // q: how to manually set the top left corner of the grid to x:0, y:0?
+  // a: set the style of the <View> component to {styles.container, {top: -screenHeight/2, left: -screenWidth/2}}
+
   return (
     <View style={styles.container}>
-      <Svg height="100%" width="100%">
+      <Svg
+        width={adjustedScreenWidth}
+        height={adjustedScreenHeight}
+        viewBox={`0 0 ${adjustedScreenWidth} ${adjustedScreenHeight}`}
+      >
         <Pattern
           id="svg-pattern"
           x="0"
@@ -192,9 +251,9 @@ export default function GameScreen({}) {
           height={cellSize}
           fill="black"
           patternUnits="userSpaceOnUse"
-          patternTransform="translate(1, 1) rotate(0) skewX(0)"
+          patternTransform="translate(0, 0) rotate(0) skewX(0)"
         >
-          <Svg width={adjustedScreenWidth} height={adjustedScreenHeight} viewBox={`0 0 ${adjustedScreenWidth} ${adjustedScreenHeight}`}>
+          <Svg>
             <Rect width={cellSize} height={cellSize} fill="black" />
             <Rect
               width="100%"
@@ -207,8 +266,9 @@ export default function GameScreen({}) {
         </Pattern>
         <Rect x="0" y="0" width="100%" height="100%" fill="url(#svg-pattern)" />
 
-        {obstacleCorners.map((obstacleCorner, index) => {
-          const { id, points } = obstacleCorner;
+        {obstacles.map((obstacles, index) => {
+          let id = obstacles.id;
+          let points = getObstaclePoints(obstacles);
 
           return (
             <React.Fragment key={index}>
@@ -250,34 +310,45 @@ export default function GameScreen({}) {
             />
           </React.Fragment>
         )}
-        <Ball x={ballPosition.x} y={ballPosition.y} ballSize={ballSize} />
+        <Ball
+          x={ballPosition.x}
+          y={ballPosition.y}
+          ballSize={(ballSize * cellSize) / 2}
+        />
       </Svg>
       <Text style={styles.positionText}>
         ballX: {ballPosition.x}, ballY: {ballPosition.y}
       </Text>
-      <View style={styles.buttonsContainer}>
+      <View style={styles.settingsButtons}>
         <SettingsScreen />
-        <Button
-          title="Back"
-          onPress={() => navigation.navigate("MenuScreen")}
-        />
-        <Button
-          title="Reset"
+
+        <Pressable
           onPress={() => setBallPosition({ x: 200, y: 50 })}
-        />
-        <View style={styles.moveButtons}>
-          <View style={styles.leftButton}>
-            <Button title="←" onPress={() => moveBall({ x: -10, y: 0 })} />
-          </View>
-          <View style={styles.rightButton}>
-            <Button title="→" onPress={() => moveBall({ x: 10, y: 0 })} />
-          </View>
-          <View style={styles.upButton}>
-            <Button title="↑" onPress={() => moveBall({ x: 0, y: -10 })} />
-          </View>
-          <View style={styles.downButton}>
-            <Button title="↓" onPress={() => moveBall({ x: 0, y: 10 })} />
-          </View>
+          style={styles.resetButton}
+        >
+          <Text style={styles.resetButtonText}>Reset</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => navigation.navigate("SettingsScreen")}
+          style={styles.menuButton}
+        >
+          <Text style={styles.menuButtonText}>Back</Text>
+        </Pressable>
+
+      </View>
+      <View style={styles.arrowButtons}>
+        <View style={styles.leftButton}>
+          <Button title=" ←" onPress={() => moveBall({ x: -1, y: 0 })} />
+        </View>
+        <View style={styles.rightButton}>
+          <Button title="→ " onPress={() => moveBall({ x: 1, y: 0 })} />
+        </View>
+        <View style={styles.upButton}>
+          <Button title=" ↑ " onPress={() => moveBall({ x: 0, y: -1 })} />
+        </View>
+        <View style={styles.downButton}>
+          <Button title=" ↓ " onPress={() => moveBall({ x: 0, y: 1 })} />
         </View>
       </View>
     </View>

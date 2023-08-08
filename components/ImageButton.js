@@ -11,11 +11,10 @@ const ImageButton = ({ onPress }) => {
 
 const styles = StyleSheet.create({
   button: {
-    flexDirection: 'row',
-    alignItems: 'center',
     //backgroundColor: 'blue',
     borderRadius: 8,
     padding: 10,
+    zIndex: 15,
   },
   image: {
     width: 20,

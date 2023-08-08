@@ -11,66 +11,82 @@ const screenHeight = screenDimensions.height;
 export const GameStyles = StyleSheet.create({
       container: {
         flex: 1,
+
         width: screenWidth,
         height: screenHeight,
         borderColor: "black",
-      },
-      row: {
-        flexDirection: 'row',
-      },
-      cell: {
-        position: 'absolute',
-        backgroundColor: '#f0f0f0',
-        borderWidth: 1,
-        borderColor: '#000',
-      },
-      resetButton: {
-        position: "absolute",
-        bottom: 0,
       },
       wall: {
         position: "absolute",
         backgroundColor: "black",
       },
-      buttonsContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: "100%",
-        paddingHorizontal: 100,
+      settingsButtons: {
         position: "absolute",
-        bottom: 75,
+        color: "white",
+        zIndex: 15,
+      },
+      resetButton: {
+        position: "absolute",
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        left: 0,
+        top: 50,
+        borderRadius: 4,
+        borderWidth: 5,
+        transform: [{ rotate: '270deg'}],
+      },
+      menuButton: {
+        position: "absolute",
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        left: 3,
+        top: 100,
+        borderRadius: 4,
+        borderWidth: 5,
+        transform: [{ rotate: '270deg'}],
+      },
+
+      resetButtonText: {
+        color: 'red',
+      },
+      menuButtonText: {
+        color: 'red',
       },
   
       positionText: {
         position: "absolute",
         fontSize: 18,
         bottom: 40,
+        color: "white",
       },
-      moveButtons: {
+      arrowButtons: {
+        flex: 1,
+        flexDirection: "column",
+        // q: how can we set the height of the arrow buttons to be just a little bit less than the height of the screen?
+        // a: height: screenHeight - 20,
+
+        height: screenHeight - 60,
+        width: screenWidth * 1.6,
         position: "absolute",
+        justifyContent: 'flex-end',
+        alignItems: 'center',
         zIndex: 10,
-        bottom: -40,
-        left: 300,
       },
       rightButton: {
         position: "absolute",
-        left: 10,
-        bottom: 0,
+        marginLeft: 60,
+        marginBottom: 35,
       },
       leftButton: {
         position: "absolute",
-        right: 10,
-        bottom: 0,
+        marginRight: 60,
+        marginBottom: 35,
       },
       upButton: {
         position: "absolute",
-        right: -12,
-        bottom: 35,
+        marginBottom: 70,
       },
       downButton: {
         position: "absolute",
-        right: -12,
-        bottom: -35,
+        marginTop: 60,
       },
       lines: {
         position: "absolute",
