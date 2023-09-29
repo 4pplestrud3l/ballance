@@ -49,13 +49,13 @@ export default function GameScreen({}) {
   const screenHeight = screenDimensions.height;
 
   // Calculate the number of cells in each direction based on screen dimensions
-  const numCellsHorizontal = 53;
-  const numCellsVertical = 100;
+  const numCellsHorizontal = 21;
+  const numCellsVertical = 42;
 
   // Calculate the cell size based on the smaller dimension (width or height)
   const cellSize = Math.min(
     screenWidth / numCellsHorizontal,
-    screenHeight / numCellsVertical
+    screenHeight * 0.8 / numCellsVertical
   );
 
   // Calculate the adjusted screen dimensions based on the number of cells
@@ -68,6 +68,9 @@ export default function GameScreen({}) {
     { id: 4, points: ["100,250", "200,250", "400,320", "200,350", "100,350"] },
   ];
 
+  const obstacleArray = [];
+
+  // Array für Hindernisse TODO: in Datenbank auslagern
   const obstacles = [
     {
       id: 1,
@@ -82,6 +85,7 @@ export default function GameScreen({}) {
     },
   ];
 
+  // Funktion um Punkte der Hindernisse zu erhalten
   const getObstaclePoints = (obstacle) => {
     const points = [];
     for (let i = 0; i < obstacle.pointsX.length; i++) {
@@ -94,9 +98,29 @@ export default function GameScreen({}) {
     return points.join(" ");
   };
 
+  // Funktion um Array für Hindernisse zu erstellen
+  const buildObstacleArray = () => {
+    for (let i = 0; i < numCellsHorizontal; i++) {
+      obstacleArray.push([]);
+      for (let j = 0; j < numCellsVertical; j++) {
+        obstacleArray[i].push(0);
+      }
+    }
+  };
+
+  // Funktion um Hindernisse in obstacleArray einzutragen
+  const setObstacles = () => {
+    for (let obstacle of obstacles) {
+      for (let i = 0; i < obstacle.pointsX.length; i++) {
+        obstacleArray[obstacle.pointsX[i]][obstacle.pointsY[i]] = 1;
+      }
+    }
+  };
+
   const [closestPoints, setClosestPoints] = useState([]);
   const [projectionPoint, setProjectionPoint] = useState(null);
 
+  // Funktion zur Überprüfung der Kollision
   const checkCollision = useCallback(
     (potentialPosition) => {
       let closestObstaclePoints = [];
@@ -160,9 +184,8 @@ export default function GameScreen({}) {
       );
       setProjectionPoint(projection);
 
-
       //console.log("distBallToProjection", distBallToProjection);
-      if (distBallToProjection <= ballSize * cellSize / 2) {
+      if (distBallToProjection <= (ballSize * cellSize) / 2) {
         console.log("collision");
         return true; // Collision detected
       }
@@ -170,9 +193,6 @@ export default function GameScreen({}) {
     },
     [ballRadius]
   ); // Remove ballPosition from the dependency array
-
-  // q: how to do the same function as here, but get all closest points and projection points for all obstacles in a certain radius?
-  // a: use a for loop to iterate through all obstacles and check for collision with each one
 
   // simple function to move the ball by using similar logic as in the useEffect above
   const moveBall = useCallback(({ x, y }) => {
@@ -222,104 +242,101 @@ export default function GameScreen({}) {
     return () => clearInterval(interval);
   }, [moveBall]);
 
-  // q: how to adjust ball position on the adjusted sizes for the grid?
-  // a: use the cellSize variable to adjust the ball position
-
-  // q: why the top left corner of the grid, is not at x:0, y:0?
-  // a: because the grid is centered on the screen, so the top left corner is at x: -screenWidth/2, y: -screenHeight/2
-  // q: where in the code is it centered on the screen?
-  // a: in the <View> component, the style is set to center the content
-  // q: is flex 1 centering it?
-  // a: yes, flex 1 is centering it
-  // q: can we change this to something, or would it corrupt the other styles?
-  // a: yes, we can change it to something else, but it would corrupt the other styles
-  // q: how to manually set the top left corner of the grid to x:0, y:0?
-  // a: set the style of the <View> component to {styles.container, {top: -screenHeight/2, left: -screenWidth/2}}
-
   return (
     <View style={styles.container}>
-      <Svg
-        width={adjustedScreenWidth}
-        height={adjustedScreenHeight}
-        viewBox={`0 0 ${adjustedScreenWidth} ${adjustedScreenHeight}`}
-      >
-        <Pattern
-          id="svg-pattern"
-          x="0"
-          y="0"
-          width={cellSize}
-          height={cellSize}
-          fill="black"
-          patternUnits="userSpaceOnUse"
-          patternTransform="translate(0, 0) rotate(0) skewX(0)"
+      {/*Game Container*/}
+      <View style={styles.gameContainer}>
+        <Svg
+          width={adjustedScreenWidth}
+          height={adjustedScreenHeight}
+          viewBox={`0 0 ${adjustedScreenWidth} ${adjustedScreenHeight}`}
         >
-          <Svg>
-            <Rect width={cellSize} height={cellSize} fill="black" />
-            <Rect
-              width="100%"
-              height="100%"
-              fill="none"
-              stroke="white"
-              strokeWidth="2"
-            />
-          </Svg>
-        </Pattern>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#svg-pattern)" />
-
-        {obstacles.map((obstacles, index) => {
-          let id = obstacles.id;
-          let points = getObstaclePoints(obstacles);
-
-          return (
-            <React.Fragment key={index}>
-              <Obstacle points={points} id={id} />
-            </React.Fragment>
-          );
-        })}
-        {closestPoints.map((point, index) => (
-          <Circle
-            key={index}
-            cx={point[0]} // x-coordinate
-            cy={point[1]} // y-coordinate
-            r={5} // radius
-            fill="red" // color
+          <Pattern
+            id="svg-pattern"
+            x="0"
+            y="0"
+            width={cellSize}
+            height={cellSize}
+            fill="black"
+            patternUnits="userSpaceOnUse"
+            patternTransform="translate(0, 0) rotate(0) skewX(0)"
+          >
+            <Svg>
+              <Rect width={cellSize} height={cellSize} fill="black" />
+              <Rect
+                width="100%"
+                height="100%"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+              />
+            </Svg>
+          </Pattern>
+          <Rect
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+            fill="url(#svg-pattern)"
           />
-        ))}
-        {closestPoints.length === 2 && (
-          <Polygon
-            points={`${ballPosition.x},${ballPosition.y} ${closestPoints[0][0]},${closestPoints[0][1]} ${closestPoints[1][0]},${closestPoints[1][1]}`}
-            fill="pink"
-          />
-        )}
-        {projectionPoint && (
-          <React.Fragment>
+
+          {obstacles.map((obstacles, index) => {
+            let id = obstacles.id;
+            let points = getObstaclePoints(obstacles);
+
+            return (
+              <React.Fragment key={index}>
+                <Obstacle points={points} id={id} />
+              </React.Fragment>
+            );
+          })}
+          {closestPoints.map((point, index) => (
             <Circle
-              cx={projectionPoint.x} // x-coordinate
-              cy={projectionPoint.y} // y-coordinate
+              key={index}
+              cx={point[0]} // x-coordinate
+              cy={point[1]} // y-coordinate
               r={5} // radius
-              fill="green" // color
+              fill="red" // color
             />
+          ))}
+          {closestPoints.length === 2 && (
+            <Polygon
+              points={`${ballPosition.x},${ballPosition.y} ${closestPoints[0][0]},${closestPoints[0][1]} ${closestPoints[1][0]},${closestPoints[1][1]}`}
+              fill="pink"
+            />
+          )}
+          {projectionPoint && (
+            <React.Fragment>
+              <Circle
+                cx={projectionPoint.x} // x-coordinate
+                cy={projectionPoint.y} // y-coordinate
+                r={5} // radius
+                fill="green" // color
+              />
 
-            <Line // Adding line component here
-              x1={ballPosition.x}
-              y1={ballPosition.y}
-              x2={projectionPoint.x}
-              y2={projectionPoint.y}
-              stroke="black"
-              strokeWidth="2"
-            />
-          </React.Fragment>
-        )}
-        <Ball
-          x={ballPosition.x}
-          y={ballPosition.y}
-          ballSize={(ballSize * cellSize) / 2}
-        />
-      </Svg>
+              <Line // Adding line component here
+                x1={ballPosition.x}
+                y1={ballPosition.y}
+                x2={projectionPoint.x}
+                y2={projectionPoint.y}
+                stroke="black"
+                strokeWidth="2"
+              />
+            </React.Fragment>
+          )}
+          <Ball
+            x={ballPosition.x}
+            y={ballPosition.y}
+            ballSize={(ballSize * cellSize) / 2}
+          />
+        </Svg>
+      </View>
+      {/*Info Text*/}
       <Text style={styles.positionText}>
         ballX: {ballPosition.x}, ballY: {ballPosition.y}
       </Text>
-      <View style={styles.settingsButtons}>
+      {/*Settings Buttons*/}
+      <View style={styles.settingsContainer}>
         <SettingsScreen />
 
         <Pressable
@@ -335,20 +352,20 @@ export default function GameScreen({}) {
         >
           <Text style={styles.menuButtonText}>Back</Text>
         </Pressable>
-
       </View>
-      <View style={styles.arrowButtons}>
+      {/*Arrow Buttons*/}
+      <View style={styles.arrowContainer}>
         <View style={styles.leftButton}>
-          <Button title=" ←" onPress={() => moveBall({ x: -1, y: 0 })} />
+          <Button title=" ←" onPress={() => moveBall({ x: -10, y: 0 })} />
         </View>
         <View style={styles.rightButton}>
-          <Button title="→ " onPress={() => moveBall({ x: 1, y: 0 })} />
+          <Button title="→ " onPress={() => moveBall({ x: 10, y: 0 })} />
         </View>
         <View style={styles.upButton}>
-          <Button title=" ↑ " onPress={() => moveBall({ x: 0, y: -1 })} />
+          <Button title=" ↑ " onPress={() => moveBall({ x: 0, y: -10 })} />
         </View>
         <View style={styles.downButton}>
-          <Button title=" ↓ " onPress={() => moveBall({ x: 0, y: 1 })} />
+          <Button title=" ↓ " onPress={() => moveBall({ x: 0, y: 10 })} />
         </View>
       </View>
     </View>

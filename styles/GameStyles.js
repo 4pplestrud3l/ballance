@@ -11,36 +11,48 @@ const screenHeight = screenDimensions.height;
 export const GameStyles = StyleSheet.create({
       container: {
         flex: 1,
-
-        width: screenWidth,
-        height: screenHeight,
+        display: "flex",
         borderColor: "black",
+        borderColor: "green",
+        borderWidth: 2,
+      },
+      gameContainer: {
+        position: "relative",
+        flex: 1,
+        marginTop: 0,
+        marginBottom: 0,
+        justifyContent: "center",
+        alignContent: "center",
+        alignItems: 'center',
+        borderColor: "purple",
+        borderWidth: 2,
+        zIndex: 5,
       },
       wall: {
         position: "absolute",
         backgroundColor: "black",
       },
-      settingsButtons: {
+      settingsContainer: {
         position: "absolute",
-        color: "white",
-        zIndex: 15,
+        color: "black",
+        borderColor: "red",
+        borderWidth: 2,
+        zIndex: 10,
       },
       resetButton: {
-        position: "absolute",
         backgroundColor: 'rgba(255, 255, 255, 0.3)',
-        left: 0,
-        top: 50,
+        margin: 10,
         borderRadius: 4,
         borderWidth: 5,
+        zIndex: 15,
         transform: [{ rotate: '270deg'}],
       },
       menuButton: {
-        position: "absolute",
         backgroundColor: 'rgba(255, 255, 255, 0.3)',
-        left: 3,
-        top: 100,
+        margin: 10,
         borderRadius: 4,
         borderWidth: 5,
+        zIndex: 15,
         transform: [{ rotate: '270deg'}],
       },
 
@@ -55,38 +67,49 @@ export const GameStyles = StyleSheet.create({
         position: "absolute",
         fontSize: 18,
         bottom: 40,
-        color: "white",
+        color: '#333333',
       },
-      arrowButtons: {
-        flex: 1,
-        flexDirection: "column",
-        // q: how can we set the height of the arrow buttons to be just a little bit less than the height of the screen?
-        // a: height: screenHeight - 20,
-
-        height: screenHeight - 60,
-        width: screenWidth * 1.6,
+      arrowContainer: {
         position: "absolute",
-        justifyContent: 'flex-end',
-        alignItems: 'center',
+        bottom: 0,
+        right: "17%",
+        borderColor: "red",
+        borderWidth: 2,
         zIndex: 10,
       },
       rightButton: {
         position: "absolute",
-        marginLeft: 60,
-        marginBottom: 35,
+        zIndex: 15,
+        left: 27,
+        bottom: 0,
+        width: 50, // add a width property
+        height: 50, // add a height property
       },
       leftButton: {
         position: "absolute",
-        marginRight: 60,
-        marginBottom: 35,
+        zIndex: 15,
+        right: 27,
+        bottom: 0,
+        width: 50, // add a width property
+        height: 50, // add a height property
       },
       upButton: {
         position: "absolute",
-        marginBottom: 70,
+        zIndex: 15,
+        bottom: 37,
+        left: "50%",
+        transform: [{ translateX: "-50%" }],
+        width: 50, // add a width property
+        height: 50, // add a height property
       },
       downButton: {
         position: "absolute",
-        marginTop: 60,
+        zIndex: 15,
+        bottom: 0,
+        left: "50%",
+        transform: [{ translateX: "-50%" }],
+        width: 50, // add a width property
+        height: 50, // add a height property
       },
       lines: {
         position: "absolute",
