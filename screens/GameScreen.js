@@ -28,49 +28,45 @@ import {
   Rect,
 } from "react-native-svg";
 
+
+// ToDo GameEngine Elemente in eigene Datei auslagern - Mischa
 export default function GameScreen({}) {
+  // import Styles - Mischa
   const styles = GameStyles;
+
+  // Reference to the accelerometer data - Mischa
   const accelerometerDataRef = useRef({ x: 0, y: 0, z: 0 });
-
-  // useState for ball properties
-  /*const ball = {
-    x: 100,
-    y: 200,
-    velocity: 0, // pixels per second
-  };*/
-
+  
+  // Ball settings - Mischa
   const { ballSize, setBallSize } = useContext(SettingsContext);
-  const [ballPosition, setBallPosition] = useState({ x: 100, y: 200 });
+  const [ballPosition, setBallPosition] = useState({ x: 100, y: 400 });
   const ballSizeAdjusted = ballSize * cellSize;
   const ballRadius = ballSizeAdjusted / 2;
-  const screenDimensions = Dimensions.get("window");
 
+  // Calculate the screen dimensions - Mischa
+  const screenDimensions = Dimensions.get("window");
   const screenWidth = screenDimensions.width;
   const screenHeight = screenDimensions.height;
 
-  // Calculate the number of cells in each direction based on screen dimensions
+  // Calculate the number of cells in each direction based on screen dimensions - Mischa
   const numCellsHorizontal = 21;
   const numCellsVertical = 42;
 
-  // Calculate the cell size based on the smaller dimension (width or height)
+  // Calculate the cell size based on the smaller dimension (width or height) - Mischa
   const cellSize = Math.min(
     screenWidth / numCellsHorizontal,
     screenHeight * 0.8 / numCellsVertical
   );
 
-  // Calculate the adjusted screen dimensions based on the number of cells
+  // Calculate the adjusted screen dimensions based on the number of cells - Mischa
   const adjustedScreenWidth = numCellsHorizontal * cellSize;
   const adjustedScreenHeight = numCellsVertical * cellSize;
 
-  const obstacleCorners = [
-    { id: 1, points: ["100,50", "200,50", "200,150", "100,150"] },
-    { id: 3, points: ["600,250", "800,250", "800,400", "600, 400"] },
-    { id: 4, points: ["100,250", "200,250", "400,320", "200,350", "100,350"] },
-  ];
-
+  // Initialisiere Array für Hindernisse
+  // wird später benötigt für effizientere Kollisionsdetektierung und Verhalten der Kugel nach Kollision - Mischa
   const obstacleArray = [];
 
-  // Array für Hindernisse TODO: in Datenbank auslagern
+  // Array für Hindernisse aktuell noch statische Daten - Mischa
   const obstacles = [
     {
       id: 1,
@@ -98,7 +94,8 @@ export default function GameScreen({}) {
     return points.join(" ");
   };
 
-  // Funktion um Array für Hindernisse zu erstellen
+  // Funktion um Größe des 2D Arrays für Hindernisse zu definieren
+  // wird später benötigt für effizientere Kollisionsdetektierung und Verhalten der Kugel nach Kollision - Mischa
   const buildObstacleArray = () => {
     for (let i = 0; i < numCellsHorizontal; i++) {
       obstacleArray.push([]);
@@ -109,6 +106,7 @@ export default function GameScreen({}) {
   };
 
   // Funktion um Hindernisse in obstacleArray einzutragen
+  // wird später benötigt für effizientere Kollisionsdetektierung und Verhalten der Kugel nach Kollision - Mischa
   const setObstacles = () => {
     for (let obstacle of obstacles) {
       for (let i = 0; i < obstacle.pointsX.length; i++) {
@@ -194,7 +192,7 @@ export default function GameScreen({}) {
     [ballRadius]
   ); // Remove ballPosition from the dependency array
 
-  // simple function to move the ball by using similar logic as in the useEffect above
+  // Funktion um Kugel zu bewegen mit Abfrage ob eine Kollision stattfindet
   const moveBall = useCallback(({ x, y }) => {
     setBallPosition((prevPosition) => {
       const nextPosition = {
@@ -243,14 +241,17 @@ export default function GameScreen({}) {
   }, [moveBall]);
 
   return (
+    /* View Container */
     <View style={styles.container}>
       {/*Game Container*/}
       <View style={styles.gameContainer}>
+      {/*SVG Elements (game elements)*/}
         <Svg
           width={adjustedScreenWidth}
           height={adjustedScreenHeight}
           viewBox={`0 0 ${adjustedScreenWidth} ${adjustedScreenHeight}`}
         >
+        {/*Grid*/}
           <Pattern
             id="svg-pattern"
             x="0"
@@ -279,7 +280,7 @@ export default function GameScreen({}) {
             height="100%"
             fill="url(#svg-pattern)"
           />
-
+        {/*Obstacle*/}
           {obstacles.map((obstacles, index) => {
             let id = obstacles.id;
             let points = getObstaclePoints(obstacles);

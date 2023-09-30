@@ -4,12 +4,9 @@ import { StyleSheet, Dimensions } from "react-native";
 import { Svg, Polyline, Rect, Circle, Polygon, SvgXml } from "react-native-svg";
 import { GameStyles } from "../styles/GameStyles";
 
-// define a triangle obstacle by providing the coordinates of the three points
-
 const styles = GameStyles;
 
 export const Obstacle = ({ points, id }) => {
-
   return (
     <Polygon
           points={points}

@@ -19,10 +19,11 @@ const styles = StyleSheet.create({
   image: {
     width: 20,
     height: 20,
-    marginRight: 10,
+    marginLeft: 10,
+    marginRight: 5,
   },
   text: {
-    color: 'white',
+    color: '#333333',
     fontSize: 16,
   },
 });
