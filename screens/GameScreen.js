@@ -9,12 +9,6 @@ export default function GameScreen({ navigation }) {
     const [ballPosition, setBallPosition] = useState({ x: 200, y: 405 });
     const ballRadius = ballSize / 2;
 
-    // q: how to get screendimensions
-    // a: use the Dimensions API
-    const screenDimensions = Dimensions.get('window');
-
-    // q: i get an error, property screendimensions does not exist
-    // a: use the width and height properties of the screenDimensions object
     const screenWidth = screenDimensions.width;
     const screenHeight = screenDimensions.height;
 
@@ -30,33 +24,6 @@ export default function GameScreen({ navigation }) {
         { x: 50, y: 120, width: 1, height: screenHeight - 220 },
         { x: screenWidth - 50, y: 120, width: 1, height: screenHeight - 220 },
     ];
-
-    
-    /*const checkCollision = (ballPosition) => {
-        const { x, y } = ballPosition;
-        const ballRadius = ballSize / 2;
-        for (const wall of walls) {
-            const { x: wallX, y: wallY, width, height } = wall;
-
-            const ballCenterX = x + ballRadius;
-            const ballCenterY = y + ballRadius;
-            
-            const closestX = Math.max(wallX, Math.min(ballCenterX, wallX + width));
-            const closestY = Math.max(wallY, Math.min(ballCenterY, wallY + height));
-
-            const distanceX = ballCenterX - closestX;
-            const distanceY = ballCenterY - closestY;
-            const distanceSquared = distanceX * distanceX + distanceY * distanceY;
-
-            if (distanceSquared < ballRadius * ballRadius) {
-                return true;
-            }
-        }
-
-        return false;
-    };*/
-    // q: can we somehow rebuild the checkCollision function also return the wall that the ball collides with?
-    // a: yes, we can return the wall object that the ball collides with
 
     const checkCollision = useCallback((ballPosition) => {
         const { x, y } = ballPosition;
@@ -82,13 +49,6 @@ export default function GameScreen({ navigation }) {
         return null;
     });
 
-
-    // q: how to allow the ball to only move in even numbers of pixels?
-    // a: use the Math.round function to round the ball position to the nearest even number
-    // q: where to use the Math.round function?
-    // a: use the Math.round function in the moveBall function
-
-
     useEffect(() => {
         let subscription;
         const subscribeToAccelerometer = async () => {
@@ -113,11 +73,6 @@ export default function GameScreen({ navigation }) {
             }
         };
     }, []);
-
-    // q: how to improve performance?
-    // a: use the useCallback hook to memoize the handleCollision function
-    // q: how to use the useCallback hook?
-    // a: wrap the handleCollision function in the useCallback hook
  
     const handleCollision = useCallback((prevPosition, nextPosition, wall) => { 
         const { x: wallX, y: wallY, width, height } = wall;
@@ -151,15 +106,6 @@ export default function GameScreen({ navigation }) {
       
         return newPosition;
     }, []);
-
-    // q: why is handleCollision in useCallback unused?
-    // a: because we are not calling the handleCollision function anywhere in the code
-    // q: how to call the handleCollision function?
-    // a: call the handleCollision function in the moveBall function
-
-    // q: how improve performance of moveball function?
-    // a: use the useCallback hook to memoize the moveBall function
-
 
 
     const moveBall = useCallback(({ x, y }) => {
